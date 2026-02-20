@@ -18,7 +18,6 @@
             align-items: center;
         }
 
-        /* BRAND NAME - CENTERED & BIG */
         .header-section {
             width: 100%;
             text-align: center;
@@ -38,26 +37,25 @@
 
         .sub-text { font-size: 0.8rem; opacity: 0.7; margin-top: 5px; letter-spacing: 1px; }
 
-        /* MAIN CONTAINER */
         .container { 
-            width: 300%;
-            max-width: 300px;
+            width: 95%;
+            max-width: 400px;
             background: #ffffff; 
             padding: 20px; 
             border-radius: 24px; 
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             color: #333;
             margin-bottom: 50px;
+            box-sizing: border-box;
         }
 
-        /* BIG TOUCH-FRIENDLY BUTTONS */
         .upload-area { 
             border: 3px dashed var(--primary); 
-            padding: 50px 20px; 
+            padding: 40px 10px; 
             border-radius: 18px; 
             background: #f8fafc; 
             margin-bottom: 20px;
-            font-size: 25px;
+            font-size: 20px;
             font-weight: bold;
             color: var(--primary);
             cursor: pointer;
@@ -65,19 +63,16 @@
         }
 
         .controls { display: flex; flex-direction: column; gap: 15px; }
-
         .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-
         label { font-size: 12px; font-weight: bold; color: #64748b; margin-bottom: 5px; display: block; text-align: left;}
 
         select { 
             width: 100%;
-            padding: 14px; 
+            padding: 12px; 
             border-radius: 12px; 
-            font-size: 15px; 
+            font-size: 14px; 
             border: 2px solid #e2e8f0;
             background: #fff;
-            appearance: none;
         }
 
         button { 
@@ -96,26 +91,32 @@
             gap: 10px;
         }
 
-        .btn-gen { background: var(--primary); box-shadow: 0 4px 12px rgba(99,102,241,0.3); }
+        .btn-gen { background: var(--primary); }
         .btn-down { background: var(--success); }
         .btn-print { background: var(--dark); }
-
-        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        button:disabled { opacity: 0.5; }
 
         /* CROP MODAL */
-        #cropModal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: #000; }
-        .modal-content { height: 100%; display: flex; flex-direction: column; padding: 15px; }
-        .img-container { flex-grow: 1; max-height: 70vh; margin: 20px 0; }
+        #cropModal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: #000; overflow-y: auto;}
+        .modal-content { min-height: 100%; display: flex; flex-direction: column; padding: 15px; box-sizing: border-box;}
+        .img-container { flex-grow: 1; max-height: 60vh; margin: 10px 0; overflow: hidden; background: #111; border-radius: 10px;}
 
-        /* PREVIEW CANVAS */
-        #canvas-wrapper { margin-top: 25px; border-radius: 15px; display: none; padding: 10px; background: #e2e8f0; border: 1px solid #cbd5e1; }
+        /* BRIGHTNESS SLIDER STYLE */
+        .slider-box {
+            background: #1e293b;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        input[type=range] { width: 100%; cursor: pointer; accent-color: var(--primary); }
+
+        #canvas-wrapper { margin-top: 25px; border-radius: 15px; display: none; padding: 10px; background: #e2e8f0; }
         canvas { width: 100%; height: auto; border-radius: 5px; }
-
-        .footer { margin-top: 25px; font-size: 13px; font-weight: bold; color: #6366f1; opacity: 0.8; }
+        .footer { margin-top: 25px; font-size: 13px; font-weight: bold; color: #6366f1; }
 
         @media print {
-            body { background: white !important; }
-            .header-section, .container, .footer { display: none !important; }
+            .header-section, .container, .footer, #cropModal { display: none !important; }
             #canvas-wrapper { display: block !important; position: absolute; left: 0; top: 0; width: 100%; }
         }
     </style>
@@ -161,15 +162,23 @@
         </div>
     </div>
 
-    <div class="footer">© DEV_ALONE95 - SELF MAKE VERSION</div>
+    <div class="footer">© DEV_ALONE95 - BRIGHTNESS VERSION</div>
 
     <div id="cropModal">
         <div class="modal-content">
-            <h2 style="color:white; text-align:center;">Crop Your Face</h2>
+            <h2 style="color:white; text-align:center; margin: 10px 0;">Crop & Adjust</h2>
+            
             <div class="img-container">
                 <img id="imageToCrop">
             </div>
+
+            <div class="slider-box">
+                <label style="color: white; font-size: 14px;">☀️ BRIGHTNESS: <span id="bVal">100</span>%</label>
+                <input type="range" id="brightnessSlider" min="50" max="200" value="100">
+            </div>
+
             <button class="btn-gen" id="cropDoneBtn">✅ DONE - PROCEED</button>
+            <button style="background:none; color:gray; font-size:12px; margin-top:10px;" onclick="location.reload()">Cancel</button>
         </div>
     </div>
 
@@ -180,6 +189,8 @@
         const fileInput = document.getElementById('fileInput');
         const cropModal = document.getElementById('cropModal');
         const imageToCrop = document.getElementById('imageToCrop');
+        const brightnessSlider = document.getElementById('brightnessSlider');
+        const bVal = document.getElementById('bVal');
         const canvas = document.getElementById('mainCanvas');
         const ctx = canvas.getContext('2d');
         
@@ -200,21 +211,44 @@
                         viewMode: 1,
                         autoCropArea: 1
                     });
+                    // Reset brightness
+                    brightnessSlider.value = 100;
+                    bVal.innerText = 100;
                 };
                 reader.readAsDataURL(file);
             }
         };
 
+        // Real-time Brightness Preview
+        brightnessSlider.oninput = () => {
+            bVal.innerText = brightnessSlider.value;
+            const filterValue = `brightness(${brightnessSlider.value}%)`;
+            document.querySelector('.cropper-view-box img').style.filter = filterValue;
+            document.querySelector('.cropper-canvas img').style.filter = filterValue;
+        };
+
         document.getElementById('cropDoneBtn').onclick = () => {
-            cropper.getCroppedCanvas().toBlob((blob) => {
+            const val = brightnessSlider.value;
+            const croppedCanvas = cropper.getCroppedCanvas();
+            
+            // Create a temporary canvas to apply brightness
+            const finalCanvas = document.createElement('canvas');
+            const fCtx = finalCanvas.getContext('2d');
+            finalCanvas.width = croppedCanvas.width;
+            finalCanvas.height = croppedCanvas.height;
+
+            fCtx.filter = `brightness(${val}%)`;
+            fCtx.drawImage(croppedCanvas, 0, 0);
+
+            finalCanvas.toBlob((blob) => {
                 croppedBlob = blob;
                 cropModal.style.display = 'none';
                 document.getElementById('statusText').innerHTML = "✅ PHOTO READY!";
-            });
+            }, 'image/jpeg', 0.95);
         };
 
         document.getElementById('genBtn').onclick = async () => {
-            if (!croppedBlob) return alert("Photo select karein!");
+            if (!croppedBlob) return alert("Pehle photo crop karein!");
             const btn = document.getElementById('genBtn');
             btn.innerText = "⏳ AI WORKING...";
             btn.disabled = true;
@@ -260,7 +294,7 @@
 
             const targetW = w_mm * 22; 
             const targetH = h_mm * 22;
-            const gapX = 70; // Big gap for scissor
+            const gapX = 70;
             const gapY = 70; 
             const margin = 50;
 
@@ -297,4 +331,4 @@
         };
     </script>
 </body>
-</html>
+</html> 
