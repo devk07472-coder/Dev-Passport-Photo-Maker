@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SARTHI PHOTO STUDIO - AI Passport</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
+    <style>
+        :root { --primary: #6366f1; --success: #10b981; --dark: #0f172a; }
+
+        body { 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            margin: 0; padding: 0;
+            background: #111827;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* BRAND NAME - CENTERED & BIG */
+        .header-section {
+            width: 100%;
+            text-align: center;
+            padding: 30px 10px;
+            background: linear-gradient(to bottom, #1e293b, #111827);
+        }
+
+        .header-brand { 
+            font-size: 2.1rem; 
+            font-weight: 900; 
+            text-transform: uppercase; 
+            letter-spacing: 2px;
+            color: yellow;
+            text-shadow: 0 0 20px rgba(99, 102, 241, 0.8);
+            margin: 0;
+        }
+
+        .sub-text { font-size: 0.8rem; opacity: 0.7; margin-top: 5px; letter-spacing: 1px; }
+
+        /* MAIN CONTAINER */
+        .container { 
+            width: 300%;
+            max-width: 300px;
+            background: #ffffff; 
+            padding: 20px; 
+            border-radius: 24px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            color: #333;
+            margin-bottom: 50px;
+        }
+
+        /* BIG TOUCH-FRIENDLY BUTTONS */
+        .upload-area { 
+            border: 3px dashed var(--primary); 
+            padding: 50px 20px; 
+            border-radius: 18px; 
+            background: #f8fafc; 
+            margin-bottom: 20px;
+            font-size: 25px;
+            font-weight: bold;
+            color: var(--primary);
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .controls { display: flex; flex-direction: column; gap: 15px; }
+
+        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+        label { font-size: 12px; font-weight: bold; color: #64748b; margin-bottom: 5px; display: block; text-align: left;}
+
+        select { 
+            width: 100%;
+            padding: 14px; 
+            border-radius: 12px; 
+            font-size: 15px; 
+            border: 2px solid #e2e8f0;
+            background: #fff;
+            appearance: none;
+        }
+
+        button { 
+            width: 100%;
+            padding: 16px; 
+            border-radius: 14px; 
+            font-size: 16px; 
+            font-weight: 800;
+            border: none;
+            cursor: pointer;
+            color: white;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-gen { background: var(--primary); box-shadow: 0 4px 12px rgba(99,102,241,0.3); }
+        .btn-down { background: var(--success); }
+        .btn-print { background: var(--dark); }
+
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* CROP MODAL */
+        #cropModal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: #000; }
+        .modal-content { height: 100%; display: flex; flex-direction: column; padding: 15px; }
+        .img-container { flex-grow: 1; max-height: 70vh; margin: 20px 0; }
+
+        /* PREVIEW CANVAS */
+        #canvas-wrapper { margin-top: 25px; border-radius: 15px; display: none; padding: 10px; background: #e2e8f0; border: 1px solid #cbd5e1; }
+        canvas { width: 100%; height: auto; border-radius: 5px; }
+
+        .footer { margin-top: 25px; font-size: 13px; font-weight: bold; color: #6366f1; opacity: 0.8; }
+
+        @media print {
+            body { background: white !important; }
+            .header-section, .container, .footer { display: none !important; }
+            #canvas-wrapper { display: block !important; position: absolute; left: 0; top: 0; width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-section">
+        <h1 class="header-brand">⭐SARTHI PHOTO⭐ STUDIO</h1>
+        <div class="sub-text">💯PREMIUM PASSPORT PHOTO MAKER</div>
+    </div>
+
+    <div class="container">
+        <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+            <span id="statusText">📸 TAP TO UPLOAD PHOTO</span>
+            <input type="file" id="fileInput" accept="image/*" hidden>
+        </div>
+
+        <div class="controls">
+            <div class="row">
+                <div>
+                    <label>PHOTO SIZE</label>
+                    <select id="pSize">
+                        <option value="35-45">35x45mm (India)</option>
+                        <option value="50-50">2x2 Inch (Visa)</option>
+                    </select>
+                </div>
+                <div>
+                    <label>PAPER TYPE</label>
+                    <select id="paper">
+                        <option value="A4">A4 Sheet</option>
+                        <option value="46">4x6 Paper</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="btn-gen" id="genBtn">🚀 GENERATE SHEET</button>
+            <button class="btn-down" id="downBtn" disabled>💾 DOWNLOAD PNG</button>
+            <button class="btn-print" id="printBtn" onclick="window.print()" disabled>🖨️ PRINT NOW</button>
+        </div>
+
+        <div id="canvas-wrapper">
+            <canvas id="mainCanvas"></canvas>
+        </div>
+    </div>
+
+    <div class="footer">© DEV_ALONE95 - SELF MAKE VERSION</div>
+
+    <div id="cropModal">
+        <div class="modal-content">
+            <h2 style="color:white; text-align:center;">Crop Your Face</h2>
+            <div class="img-container">
+                <img id="imageToCrop">
+            </div>
+            <button class="btn-gen" id="cropDoneBtn">✅ DONE - PROCEED</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+    <script>
+        const API_KEY = 'YCZpJFuzwAg5HWg5Z8rYuJa5';
+        const fileInput = document.getElementById('fileInput');
+        const cropModal = document.getElementById('cropModal');
+        const imageToCrop = document.getElementById('imageToCrop');
+        const canvas = document.getElementById('mainCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let cropper;
+        let croppedBlob = null;
+        let aiFinalImage = null;
+
+        fileInput.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    imageToCrop.src = event.target.result;
+                    cropModal.style.display = 'block';
+                    if (cropper) cropper.destroy();
+                    cropper = new Cropper(imageToCrop, {
+                        aspectRatio: 35 / 45,
+                        viewMode: 1,
+                        autoCropArea: 1
+                    });
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+
+        document.getElementById('cropDoneBtn').onclick = () => {
+            cropper.getCroppedCanvas().toBlob((blob) => {
+                croppedBlob = blob;
+                cropModal.style.display = 'none';
+                document.getElementById('statusText').innerHTML = "✅ PHOTO READY!";
+            });
+        };
+
+        document.getElementById('genBtn').onclick = async () => {
+            if (!croppedBlob) return alert("Photo select karein!");
+            const btn = document.getElementById('genBtn');
+            btn.innerText = "⏳ AI WORKING...";
+            btn.disabled = true;
+
+            const formData = new FormData();
+            formData.append('image_file', croppedBlob);
+            formData.append('bg_color', 'blue');
+
+            try {
+                const res = await fetch('https://api.remove.bg/v1.0/removebg', {
+                    method: 'POST',
+                    headers: { 'X-Api-Key': API_KEY },
+                    body: formData
+                });
+
+                if (res.ok) {
+                    const blob = await res.blob();
+                    aiFinalImage = new Image();
+                    aiFinalImage.onload = drawSheet;
+                    aiFinalImage.src = URL.createObjectURL(blob);
+                } else {
+                    alert("API Error! Key ya credits check karein.");
+                    btn.disabled = false;
+                    btn.innerText = "🚀 GENERATE SHEET";
+                }
+            } catch (err) {
+                alert("Network Error!");
+                btn.disabled = false;
+            }
+        };
+
+        function drawSheet() {
+            const [w_mm, h_mm] = document.getElementById('pSize').value.split('-').map(Number);
+            const paper = document.getElementById('paper').value;
+
+            let cW = 2480; let cH = 3508; 
+            if(paper === '46') { cW = 1200; cH = 1800; }
+
+            canvas.width = cW;
+            canvas.height = cH;
+            ctx.fillStyle = "white";
+            ctx.fillRect(0, 0, cW, cH);
+
+            const targetW = w_mm * 22; 
+            const targetH = h_mm * 22;
+            const gapX = 70; // Big gap for scissor
+            const gapY = 70; 
+            const margin = 50;
+
+            let x = margin;
+            let y = margin;
+
+            while (y + targetH <= cH - margin) {
+                while (x + targetW <= cW - margin) {
+                    ctx.drawImage(aiFinalImage, x, y, targetW, targetH);
+                    ctx.strokeStyle = "black";
+                    ctx.lineWidth = 5;
+                    ctx.strokeRect(x, y, targetW, targetH);
+                    x += targetW + gapX;
+                }
+                x = margin;
+                y += targetH + gapY;
+            }
+
+            document.getElementById('canvas-wrapper').style.display = 'block';
+            document.getElementById('downBtn').disabled = false;
+            document.getElementById('printBtn').disabled = false;
+            document.getElementById('genBtn').disabled = false;
+            document.getElementById('genBtn').innerText = "✅ SHEET READY";
+            window.scrollTo(0, document.body.scrollHeight);
+        }
+
+        document.getElementById('downBtn').onclick = () => {
+            canvas.toBlob((blob) => {
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = 'SARTHI_studio_passport.png';
+                link.click();
+            }, 'image/png');
+        };
+    </script>
+</body>
+</html>
