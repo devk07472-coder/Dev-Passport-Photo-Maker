@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SARTHI PHOTO STUDIO - AI Passport</title>
+    <title>SARTHI PHOTO STUDIO - Free Passport Photo Maker</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css">
     <style>
         :root { --primary: #6366f1; --success: #10b981; --dark: #0f172a; }
@@ -51,7 +51,7 @@
 
         .upload-area { 
             border: 3px dashed var(--primary); 
-            padding: 40px 10px; 
+            padding: 80px 10px; 
             border-radius: 18px; 
             background: #f8fafc; 
             margin-bottom: 20px;
@@ -63,7 +63,6 @@
         }
 
         .controls { display: flex; flex-direction: column; gap: 15px; }
-        .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         label { font-size: 12px; font-weight: bold; color: #64748b; margin-bottom: 5px; display: block; text-align: left;}
 
         select { 
@@ -73,13 +72,14 @@
             font-size: 14px; 
             border: 2px solid #e2e8f0;
             background: #fff;
+            margin-bottom: 10px;
         }
 
         button { 
             width: 100%;
             padding: 16px; 
             border-radius: 14px; 
-            font-size: 16px; 
+            font-size: 18px; 
             font-weight: 800;
             border: none;
             cursor: pointer;
@@ -89,6 +89,7 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
+            margin-top: 5px;
         }
 
         .btn-gen { background: var(--primary); }
@@ -96,12 +97,10 @@
         .btn-print { background: var(--dark); }
         button:disabled { opacity: 0.5; }
 
-        /* CROP MODAL */
         #cropModal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: #000; overflow-y: auto;}
         .modal-content { min-height: 100%; display: flex; flex-direction: column; padding: 15px; box-sizing: border-box;}
         .img-container { flex-grow: 1; max-height: 60vh; margin: 10px 0; overflow: hidden; background: #111; border-radius: 10px;}
 
-        /* BRIGHTNESS SLIDER STYLE */
         .slider-box {
             background: #1e293b;
             padding: 15px;
@@ -111,13 +110,25 @@
         }
         input[type=range] { width: 100%; cursor: pointer; accent-color: var(--primary); }
 
-        #canvas-wrapper { margin-top: 25px; border-radius: 15px; display: none; padding: 10px; background: #e2e8f0; }
-        canvas { width: 100%; height: auto; border-radius: 5px; }
+        #canvas-wrapper { 
+            margin-top: 25px; 
+            border-radius: 15px; 
+            display: none; 
+            padding: 20px; 
+            background: #e2e8f0; 
+            text-align: center;
+        }
+        canvas { 
+            max-width: 200px; /* Display size control */
+            height: auto; 
+            border-radius: 5px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
         .footer { margin-top: 25px; font-size: 13px; font-weight: bold; color: #6366f1; }
 
         @media print {
             .header-section, .container, .footer, #cropModal { display: none !important; }
-            #canvas-wrapper { display: block !important; position: absolute; left: 0; top: 0; width: 100%; }
+            #canvas-wrapper { display: block !important; position: absolute; left: 0; top: 0; }
         }
     </style>
 </head>
@@ -125,7 +136,7 @@
 
     <div class="header-section">
         <h1 class="header-brand">⭐SARTHI PHOTO⭐ STUDIO</h1>
-        <div class="sub-text">💯PREMIUM PASSPORT PHOTO MAKER</div>
+        <div class="sub-text">💯FREE/REAL PASSPORT PHOTO MAKER</div>
     </div>
 
     <div class="container">
@@ -135,48 +146,37 @@
         </div>
 
         <div class="controls">
-            <div class="row">
-                <div>
-                    <label>PHOTO SIZE</label>
-                    <select id="pSize">
-                        <option value="35-45">35x45mm (India)</option>
-                        <option value="50-50">2x2 Inch (Visa)</option>
-                    </select>
-                </div>
-                <div>
-                    <label>PAPER TYPE</label>
-                    <select id="paper">
-                        <option value="A4">A4 Sheet</option>
-                        <option value="46">4x6 Paper</option>
-                    </select>
-                </div>
+            <div>
+                <label>SELECT PHOTO SIZE</label>
+                <select id="pSize">
+                    <option value="35-45">35x45mm (India Passport)</option>
+                    <option value="50-50">2x2 Inch (Visa Size)</option>
+                </select>
             </div>
 
-            <button class="btn-gen" id="genBtn">🚀 GENERATE SHEET</button>
-            <button class="btn-down" id="downBtn" disabled>💾 DOWNLOAD PNG</button>
-            <button class="btn-print" id="printBtn" onclick="window.print()" disabled>🖨️ PRINT NOW</button>
+            <button class="btn-gen" id="genBtn">🚀 GENERATE PHOTO</button>
+            <button class="btn-down" id="downBtn" disabled>💾 DOWNLOAD PHOTO</button>
+            <button class="btn-print" id="printBtn" onclick="window.print()" disabled>🖨️ PRINT PHOTO</button>
         </div>
 
         <div id="canvas-wrapper">
+            <p style="font-size: 12px; color: #475569; margin-bottom: 10px;">PREVIEW:</p>
             <canvas id="mainCanvas"></canvas>
         </div>
     </div>
 
-    <div class="footer">© DEV_ALONE95 - BRIGHTNESS VERSION</div>
+    <div class="h3"><a href="https://www.instagram.com/dev_alone95?igsh=MWhmZ2k1NmF2czNieA=="> © DEV_ALONE95 </a>- Owner Details</div>
 
     <div id="cropModal">
         <div class="modal-content">
             <h2 style="color:white; text-align:center; margin: 10px 0;">Crop & Adjust</h2>
-            
             <div class="img-container">
                 <img id="imageToCrop">
             </div>
-
             <div class="slider-box">
                 <label style="color: white; font-size: 14px;">☀️ BRIGHTNESS: <span id="bVal">100</span>%</label>
                 <input type="range" id="brightnessSlider" min="50" max="200" value="100">
             </div>
-
             <button class="btn-gen" id="cropDoneBtn">✅ DONE - PROCEED</button>
             <button style="background:none; color:gray; font-size:12px; margin-top:10px;" onclick="location.reload()">Cancel</button>
         </div>
@@ -206,12 +206,13 @@
                     imageToCrop.src = event.target.result;
                     cropModal.style.display = 'block';
                     if (cropper) cropper.destroy();
+                    
+                    const [w, h] = document.getElementById('pSize').value.split('-').map(Number);
                     cropper = new Cropper(imageToCrop, {
-                        aspectRatio: 35 / 45,
+                        aspectRatio: w / h,
                         viewMode: 1,
                         autoCropArea: 1
                     });
-                    // Reset brightness
                     brightnessSlider.value = 100;
                     bVal.innerText = 100;
                 };
@@ -219,7 +220,6 @@
             }
         };
 
-        // Real-time Brightness Preview
         brightnessSlider.oninput = () => {
             bVal.innerText = brightnessSlider.value;
             const filterValue = `brightness(${brightnessSlider.value}%)`;
@@ -230,13 +230,10 @@
         document.getElementById('cropDoneBtn').onclick = () => {
             const val = brightnessSlider.value;
             const croppedCanvas = cropper.getCroppedCanvas();
-            
-            // Create a temporary canvas to apply brightness
             const finalCanvas = document.createElement('canvas');
             const fCtx = finalCanvas.getContext('2d');
             finalCanvas.width = croppedCanvas.width;
             finalCanvas.height = croppedCanvas.height;
-
             fCtx.filter = `brightness(${val}%)`;
             fCtx.drawImage(croppedCanvas, 0, 0);
 
@@ -267,12 +264,12 @@
                 if (res.ok) {
                     const blob = await res.blob();
                     aiFinalImage = new Image();
-                    aiFinalImage.onload = drawSheet;
+                    aiFinalImage.onload = drawSinglePhoto;
                     aiFinalImage.src = URL.createObjectURL(blob);
                 } else {
-                    alert("API Error! Key ya credits check karein.");
+                    alert("API Error! Key check karein.");
                     btn.disabled = false;
-                    btn.innerText = "🚀 GENERATE SHEET";
+                    btn.innerText = "🚀 GENERATE PHOTO";
                 }
             } catch (err) {
                 alert("Network Error!");
@@ -280,44 +277,34 @@
             }
         };
 
-        function drawSheet() {
+        function drawSinglePhoto() {
             const [w_mm, h_mm] = document.getElementById('pSize').value.split('-').map(Number);
-            const paper = document.getElementById('paper').value;
+            
+            // Setting High Quality Resolution (300 DPI approx)
+            const targetW = w_mm * 11.8; // mm to pixels conversion
+            const targetH = h_mm * 11.8;
 
-            let cW = 2480; let cH = 3508; 
-            if(paper === '46') { cW = 1200; cH = 1800; }
+            canvas.width = targetW;
+            canvas.height = targetH;
 
-            canvas.width = cW;
-            canvas.height = cH;
+            // Background White (if any transparent area left)
             ctx.fillStyle = "white";
-            ctx.fillRect(0, 0, cW, cH);
+            ctx.fillRect(0, 0, targetW, targetH);
 
-            const targetW = w_mm * 22; 
-            const targetH = h_mm * 22;
-            const gapX = 70;
-            const gapY = 70; 
-            const margin = 50;
+            // Draw the single AI processed image
+            ctx.drawImage(aiFinalImage, 0, 0, targetW, targetH);
 
-            let x = margin;
-            let y = margin;
+            // Add Professional Border
+            ctx.strokeStyle = "black";
+            ctx.lineWidth = targetW * 0.02; // Dynamic border thickness
+            ctx.strokeRect(0, 0, targetW, targetH);
 
-            while (y + targetH <= cH - margin) {
-                while (x + targetW <= cW - margin) {
-                    ctx.drawImage(aiFinalImage, x, y, targetW, targetH);
-                    ctx.strokeStyle = "black";
-                    ctx.lineWidth = 5;
-                    ctx.strokeRect(x, y, targetW, targetH);
-                    x += targetW + gapX;
-                }
-                x = margin;
-                y += targetH + gapY;
-            }
-
+            // UI Updates
             document.getElementById('canvas-wrapper').style.display = 'block';
             document.getElementById('downBtn').disabled = false;
             document.getElementById('printBtn').disabled = false;
             document.getElementById('genBtn').disabled = false;
-            document.getElementById('genBtn').innerText = "✅ SHEET READY";
+            document.getElementById('genBtn').innerText = "✅ PHOTO READY";
             window.scrollTo(0, document.body.scrollHeight);
         }
 
@@ -325,10 +312,10 @@
             canvas.toBlob((blob) => {
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
-                link.download = 'SARTHI_studio_passport.png';
+                link.download = 'SARTHI_Passport_Photo.png';
                 link.click();
             }, 'image/png');
         };
     </script>
 </body>
-</html> 
+</html>
